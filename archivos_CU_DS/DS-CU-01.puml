@@ -1,0 +1,68 @@
+@startuml
+autonumber
+
+actor "Administrador" as Admin
+
+box "Capa de Presentacion (Custom UI)" #LightGray
+    boundary "Dashboard UI\n(Template HTML/CSS)" as UI
+end box
+
+box "Capa de Logica de Negocio (Django MVT)" #LightCyan
+    control "SorteoView\n(Django View)" as View
+    control "SorteoForm\n(Django Form)" as Form
+end box
+
+box "Capa de Datos" #LightYellow
+    entity "Sorteo\n(Django Model)" as Model
+    database "Base de Datos" as DB
+end box
+
+== Fase 1: Solicitud de Interfaz ==
+Admin -> UI : Clic en "Nuevo Registro"
+activate UI
+UI -> View : GET /sorteos/nuevo/
+activate View
+View --> UI : Renderiza HTML con Formulario Vacio
+deactivate View
+UI --> Admin : Muestra Formulario (Numero y Fecha)
+deactivate UI
+
+== Fase 2: Envio y Validacion de Datos ==
+Admin -> UI : Ingresa datos y clic en "Guardar Sorteo"
+activate UI
+UI -> View : POST /sorteos/nuevo/ [datos_formulario]
+activate View
+
+View -> Form : Instanciar con datos (request.POST)
+activate Form
+View -> Form : is_valid()
+
+note over Form : Valida RN-01 (Formato numerico)\ny RN-02 (Unicidad temporal en BD)
+
+alt Caso Exitoso [Flujo Principal]
+    Form --> View : true
+    View -> Form : save()
+    Form -> Model : objects.create()
+    activate Model
+    Model -> DB : INSERT INTO loteria_sorteo (...)
+    activate DB
+    DB --> Model : Confirmacion de insercion (OK)
+    deactivate DB
+    Model --> Form : Instancia de objeto Sorteo
+    deactivate Model
+    Form --> View : Objeto Guardado
+    deactivate Form
+    
+    View -> UI : Redireccion (302) + Django Messages
+    UI --> Admin : Muestra Listado Actualizado + Notificacion de Exito
+
+else Error en Validacion o Duplicado [FE-01 / FE-02]
+    Form --> View : false (errors)
+    deactivate Form
+    View -> UI : Renderiza HTML con errores
+    UI --> Admin : Resalta campos erroneos / Alerta de Duplicado
+    deactivate View
+    deactivate UI
+end
+
+@enduml

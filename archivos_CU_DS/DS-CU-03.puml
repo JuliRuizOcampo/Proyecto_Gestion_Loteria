@@ -1,0 +1,87 @@
+@startuml
+autonumber
+
+actor "Administrador" as Admin
+
+box "Capa de Presentacion (Custom UI)" #LightGray
+    boundary "Dashboard UI\n(Template Formulario)" as UI
+end box
+
+box "Capa de Logica de Negocio (Django MVT)" #LightCyan
+    control "SorteoUpdateView\n(Django View)" as View
+    control "SorteoForm\n(Django Form)" as Form
+end box
+
+box "Capa de Datos" #LightYellow
+    entity "Sorteo\n(Django Model)" as Model
+    database "Base de Datos" as DB
+end box
+
+== Fase 1: Recuperacion y Carga de Datos Existentes ==
+Admin -> UI : Clic en "Editar" (Id_Sorteo)
+activate UI
+UI -> View : GET /sorteos/<id>/editar/
+activate View
+
+View -> Model : Sorteo.objects.get(id=id)
+activate Model
+Model -> DB : SELECT * FROM loteria_sorteo WHERE id = id
+activate DB
+DB --> Model : Datos del Sorteo (Record)
+deactivate DB
+
+alt Caso Exitoso: Registro Existe
+    Model --> View : Instancia Objeto Sorteo
+    deactivate Model
+    View --> UI : Renderiza HTML con Formulario Pre-cargado
+    UI --> Admin : Muestra datos actuales del sorteo
+else Registro Eliminado por Concurrencia [FE-01]
+    activate Model
+    Model --> View : Sorteo.DoesNotExist
+    deactivate Model
+    View --> UI : Renderiza Pagina Error 404 Custom
+    UI --> Admin : Muestra: "El sorteo ya no existe"
+end
+deactivate View
+deactivate UI
+
+== Fase 2: Procesamiento de la Actualizacion ==
+Admin -> UI : Modifica campos y clic en "Guardar Cambios"
+activate UI
+UI -> View : POST /sorteos/<id>/editar/ [nuevos_datos]
+activate View
+
+View -> Form : Instanciar con datos y registro actual
+activate Form
+View -> Form : is_valid()
+
+note over Form : Valida formato y conflicto\nde fechas con otros registros (RN-02)
+
+alt Caso Exitoso [Flujo Principal]
+    Form --> View : true
+    View -> Form : save()
+    Form -> Model : save() (Instance Update)
+    activate Model
+    Model -> DB : UPDATE loteria_sorteo SET ... WHERE id = id
+    activate DB
+    DB --> Model : Confirmacion de actualizacion (OK)
+    deactivate DB
+    Model --> Form : Objeto Actualizado
+    deactivate Model
+    Form --> View : Cambios Guardados
+    deactivate Form
+    
+    View -> UI : Redireccion (302) + Message (Toast Exito)
+    UI --> Admin : Redirige al Listado + Notificacion de Actualizado
+
+else Datos Invalidos o Fecha Duplicada [FE-02]
+    activate Form
+    Form --> View : false (errors)
+    deactivate Form
+    View -> UI : Renderiza HTML con los errores especificos
+    UI --> Admin : Muestra alertas de validacion en pantalla
+    deactivate View
+    deactivate UI
+end
+
+@enduml

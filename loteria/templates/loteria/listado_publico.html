@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Números Ganadores - Lotería</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f7fb;
+            color: #1f2937;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 26px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #0f4761;
+            font-size: 32px;
+            flex: 1;
+            min-width: 250px;
+        }
+        .header .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .subtitle-description {
+            color: #475569;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            max-width: 800px;
+        }
+        .btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #fff;
+            background: #0f4761;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .btn:hover {
+            background-color: #093353;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 16px 40px rgba(15, 71, 97, 0.08);
+            margin-bottom: 22px;
+        }
+        .filter-section {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .filter-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #0f4761;
+        }
+        .filter-section input {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+        .filter-section button {
+            padding: 10px 16px;
+            background: #0f4761;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .filter-section button:hover {
+            background-color: #093353;
+        }
+        .filter-section a {
+            padding: 10px 16px;
+            background: #cbd5e1;
+            color: #1f2937;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .filter-section a:hover {
+            background-color: #a1a5b0;
+        }
+        .message {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 22px;
+        }
+        .message-warning {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            color: #92400e;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #e2eff8;
+            color: #0f4761;
+            font-weight: 600;
+        }
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .empty-state h2 {
+            margin: 16px 0 8px;
+            color: #475569;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .pagination a,
+        .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #0f4761;
+            transition: background-color 0.2s ease;
+        }
+        .pagination a:hover {
+            background-color: #e2eff8;
+        }
+        .pagination .current {
+            background: #0f4761;
+            color: white;
+            border-color: #0f4761;
+        }
+        .pagination .disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .info-text {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>Números Ganadores</h1>
+            <div class="actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'loteria:listado' %}" class="btn">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'loteria:login' %}" class="btn">Iniciar sesión</a>
+                {% endif %}
+            </div>
+        </div>
+        <p class="subtitle-description">Accede al registro público de todos los números ganadores de los sorteos de lotería. Consulta el histórico completo, filtra por fecha y mantente informado de los resultados oficiales.</p>
+
+        <div class="card">
+            <h3 style="margin-top: 0; color: #0f4761;">Filtrar por Fecha</h3>
+            <form method="get" class="filter-section">
+                <div>
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" name="fecha" value="{{ fecha_filtro }}">
+                </div>
+                <button type="submit">Filtrar</button>
+                {% if fecha_filtro %}
+                    <a href="{% url 'loteria:consultar_sorteos' %}">Limpiar filtro</a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if fecha_filtro %}
+            <div class="message message-warning">
+                Mostrando resultados filtrados por fecha: <strong>{{ fecha_filtro }}</strong>
+            </div>
+        {% endif %}
+
+        {% if sorteos %}
+            <div class="card">
+                <p class="info-text">Se encontraron <strong>{{ total_sorteos }}</strong> resultado(s)</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha del Sorteo</th>
+                            <th>Número Ganador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sorteo in sorteos %}
+                            <tr>
+                                <td>{{ sorteo.fecha|date:"d/m/Y" }}</td>
+                                <td><strong>{{ sorteo.numero }}</strong></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if page_obj.has_other_pages %}
+                    <div class="pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1{% if fecha_filtro %}&fecha={{ fecha_filtro }}{% endif %}">« Primera</a>
+                            <a href="?page={{ page_obj.previous_page_number }}{% if fecha_filtro %}&fecha={{ fecha_filtro }}{% endif %}">‹ Anterior</a>
+                        {% else %}
+                            <span class="disabled">« Primera</span>
+                            <span class="disabled">‹ Anterior</span>
+                        {% endif %}
+
+                        <span class="info-text">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if fecha_filtro %}&fecha={{ fecha_filtro }}{% endif %}">Siguiente ›</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}{% if fecha_filtro %}&fecha={{ fecha_filtro }}{% endif %}">Última »</a>
+                        {% else %}
+                            <span class="disabled">Siguiente ›</span>
+                            <span class="disabled">Última »</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <h2>No se encontraron números ganadores</h2>
+                    <p>No hay resultados para los criterios seleccionados. Intenta cambiar el filtro de fecha o consulta nuevamente más tarde.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

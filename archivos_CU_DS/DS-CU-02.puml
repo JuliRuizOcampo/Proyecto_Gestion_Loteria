@@ -1,0 +1,69 @@
+@startuml
+autonumber
+
+actor "Usuario" as User
+
+box "Capa de Presentacion (Custom UI)" #LightGray
+    boundary "Listado UI\n(Template HTML/CSS)" as UI
+end box
+
+box "Capa de Logica de Negocio (Django MVT)" #LightCyan
+    control "SorteoListView\n(Django View)" as View
+end box
+
+box "Capa de Datos" #LightYellow
+    entity "Sorteo\n(Django Model)" as Model
+    database "Base de Datos" as DB
+end box
+
+== Fase 1: Carga Inicial de Listado (Flujo Principal) ==
+User -> UI : Accede a la pagina de resultados
+activate UI
+UI -> View : GET /sorteos/
+activate View
+
+View -> Model : Sorteo.objects.all().order_by('-fecha')
+activate Model
+Model -> DB : SELECT * FROM loteria_sorteo ORDER BY fecha DESC
+activate DB
+DB --> Model : Lista de registros (RecordSet)
+deactivate DB
+Model --> View : QuerySet [sorteos]
+deactivate Model
+
+alt Caso A: Base de Datos con Registros
+    View --> UI : Renderiza HTML con Tabla de Resultados (Contexto)
+    UI --> User : Muestra listado ordenado y responsive
+else Caso B: Base de Datos Vacia [FE-01]
+    View --> UI : Renderiza HTML con bloque de contingencia
+    UI --> User : Muestra mensaje: "No hay sorteos registrados"
+end
+deactivate View
+deactivate UI
+
+== Fase 2: Filtrado por Fecha (Flujo Alternativo FA-01) ==
+User -> UI : Selecciona fecha y clic en "Filtrar"
+activate UI
+UI -> View : GET /sorteos/?fecha=YYYY-MM-DD
+activate View
+
+View -> Model : Sorteo.objects.filter(fecha=param_fecha)
+activate Model
+Model -> DB : SELECT * FROM loteria_sorteo WHERE fecha = 'YYYY-MM-DD'
+activate DB
+DB --> Model : Registro(s) filtrado(s)
+deactivate DB
+Model --> View : QuerySet Filtrado
+deactivate Model
+
+alt Caso A: Se encontraron coincidencias
+    View --> UI : Renderiza HTML con el sorteo filtrado
+    UI --> User : Muestra el numero ganador en pantalla
+else Caso B: Sin coincidencias [FE-01 Alterno]
+    View --> UI : Renderiza HTML con bloque "Sin resultados"
+    UI --> User : Muestra: "No hay resultados para la fecha seleccionada"
+    deactivate View
+    deactivate UI
+end
+
+@enduml

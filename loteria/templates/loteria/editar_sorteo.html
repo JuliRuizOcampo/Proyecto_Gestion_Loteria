@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Sorteo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 640px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f3f7fb;
+            color: #1f2937;
+        }
+        h1 {
+            color: #0f4761;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(15, 71, 97, 0.08);
+            padding: 28px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+        }
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 180px;
+            padding: 14px 18px;
+            background-color: #0f4761;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+        .btn:hover {
+            background-color: #093353;
+        }
+        .btn-secondary {
+            background-color: #475569;
+        }
+        .btn-secondary:hover {
+            background-color: #334155;
+        }
+        .errorlist {
+            color: #b91c1c;
+            list-style: none;
+            padding-left: 0;
+            margin: 8px 0 0;
+            font-size: 14px;
+        }
+        .errorlist li {
+            margin-bottom: 4px;
+        }
+        .field-errors {
+            margin-top: 8px;
+        }
+        .note {
+            margin-top: 18px;
+            font-size: 14px;
+            color: #475569;
+        }
+        .info-box {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Editar Sorteo</h1>
+    <div class="card">
+        <div class="info-box">
+            <strong>ID del Sorteo:</strong> {{ sorteo.id }} | 
+            <strong>Registrado:</strong> {{ sorteo.fecha|date:"d/m/Y" }}
+        </div>
+        
+        <form method="post" action="">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div class="form-actions">
+                <a class="btn btn-secondary" href="{% url 'loteria:listado' %}">Volver</a>
+                <button type="submit" class="btn">Guardar Cambios</button>
+            </div>
+        </form>
+        <p class="note">Modifica los datos del sorteo y presiona "Guardar Cambios" para actualizar los cambios. Presiona "Volver" para cancelar sin guardar.</p>
+    </div>
+</body>
+</html>

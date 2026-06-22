@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Exitoso</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 640px;
+            margin: 50px auto;
+            padding: 0 20px;
+            background-color: #eef6f5;
+            color: #1f2937;
+            text-align: center;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 14px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            padding: 32px 28px;
+        }
+        .exito {
+            color: #0f9761;
+            font-size: 56px;
+            margin: 0;
+            line-height: 1;
+        }
+        h1 {
+            color: #0f4761;
+            margin: 18px 0 10px;
+            font-size: 30px;
+        }
+        p {
+            color: #475569;
+            font-size: 17px;
+            margin: 14px 0 24px;
+        }
+        a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 14px 24px;
+            background-color: #0f4761;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        a:hover {
+            background-color: #0a3346;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <p class="exito">✔</p>
+        <h1>¡Registro Exitoso!</h1>
+        <p>El número de lotería fue guardado correctamente y ahora queda registrado.</p>
+        <a href="{% url 'loteria:registrar' %}">Registrar otro número</a>
+    </div>
+</body>
+</html>

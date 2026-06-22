@@ -1,0 +1,71 @@
+@startuml
+autonumber
+
+actor "Administrador" as Admin
+
+box "Capa de Presentacion (Custom UI)" #LightGray
+    boundary "Dashboard UI\n(Template Listado)" as UI
+    boundary "Modal de Confirmacion\n(Bootstrap / JS Component)" as Modal
+end box
+
+box "Capa de Logica de Negocio (Django MVT)" #LightCyan
+    control "SorteoDeleteView\n(Django View)" as View
+end box
+
+box "Capa de Datos" #LightYellow
+    entity "Sorteo\n(Django Model)" as Model
+    database "Base de Datos" as DB
+end box
+
+== Fase 1: Prevencion y Confirmacion (RN-05) ==
+Admin -> UI : Clic en "Eliminar" (Id_Sorteo)
+activate UI
+UI -> Modal : Desplegar Ventana Emergente
+activate Modal
+Modal --> Admin : Solicita Confirmacion: "¿Desea eliminar este sorteo?"
+
+alt Caso Alternativo: Presiona Cancelar [FA-01]
+    Admin -> Modal : Clic en "Cancelar"
+    Modal -> UI : Cerrar Ventana (No hace nada)
+end
+
+== Fase 2: Procesamiento del Borrado ==
+Admin -> Modal : Clic en "Confirmar Eliminación"
+deactivate Modal
+
+UI -> View : POST /sorteos/<id>/eliminar/
+deactivate UI
+activate View
+
+View -> Model : Sorteo.objects.get(id=id)
+activate Model
+Model -> DB : SELECT * FROM loteria_sorteo WHERE id = id
+activate DB
+DB --> Model : Datos del Sorteo
+deactivate DB
+
+alt Caso Exitoso: Registro Existe
+    Model --> View : Instancia del Objeto
+    View -> Model : delete()
+    Model -> DB : DELETE FROM loteria_sorteo WHERE id = id
+    activate DB
+    DB --> Model : Confirmacion de borrado (OK)
+    deactivate DB
+    Model --> View : Confirmacion de eliminacion ORM
+    deactivate Model
+    
+    View -> UI : Redireccion (302) + Message (Toast Exito)
+    activate UI
+    UI --> Admin : Recarga listado sin el registro + Alerta de Exito
+    
+else Registro no encontrado [FE-01]
+    activate Model
+    Model --> View : Sorteo.DoesNotExist
+    deactivate Model
+    View -> UI : Renderiza Estado 404 / Error Controlado
+    UI --> Admin : Muestra mensaje: "El registro ya no existe"
+    deactivate View
+    deactivate UI
+end
+
+@enduml
